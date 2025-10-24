@@ -10,6 +10,8 @@ app.use(express.json());
  
 app.use(useRouter);
 
+app.use(errorMiddleware);
+
 app.listen(port, () => {
   console.log(`server running at http://localhost:${port}`);
   testConnection();
