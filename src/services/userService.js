@@ -24,3 +24,34 @@ export const getUserById = async (id) => {
 
     return users[0];
 };
+
+export const addUser = async (userData) => {
+    const { fullname, username, email, password, role } = userData;
+    const [result] = await pool.query(
+        "INSERT INTO users (fullname, username, email, password, role) VALUES (?, ?, ?, ?, ?)",
+        [fullname, username, email, password, role]
+    );
+
+    return { id: result.insertId, ...userData };
+};
+
+export const updateUser = async (id, userData) => {
+    const { fullname, username, email, password, role } = userData;
+    const [result] = await pool.query(
+        "UPDATE users SET fullname=?, username=?, email=?, password=?, role=? WHERE id=?",
+        [fullname, username, email, password, role, id]
+    );
+
+    if (result.affectedRows === 0) {
+        throw new ResponseError(404, "User not found");
+    }
+
+    return { id, ...userData };
+};
+
+export const deleteUser = async (id) => {
+    const [result] = await pool.query("DELETE FROM users WHERE id=?", [id]);
+    if (result.affectedRows === 0) {
+        throw new ResponseError(404, "User not found");
+    }
+    };

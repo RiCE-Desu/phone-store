@@ -1,11 +1,8 @@
-import { use } from 'react';
-import * as userService from '../services/userService.js';
+// src/errors/responseError.js
+export class ResponseError extends Error {
 
-export const getAllUsersHandler = async (req, res) => {
-    const {id} = req.params;
-    try {
-        const users = await userService.getAllUsers(id);
-        res.json(users);
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to fetch error' });
-    }}
+    constructor(status, message) {
+        super(message);
+        this.status = status;
+    }
+}

@@ -1,11 +1,11 @@
 import express from "express";
 import {
-  addUsersHandler,
+  addUserHandler,
   getAllUsersHandler,
   getUserByIdHandler,
-  updateUsersHandler,
-  deleteUsersByIdHandler
-} from "../handler/usersHandler.js";
+  updateUserHandler,
+  deleteUserByIdHandler
+} from "../controllers/userController.js";
 
 import {
   addProductHandler,
@@ -19,9 +19,9 @@ const apiRouter = express.Router();
 
 apiRouter.get("/users", getAllUsersHandler);
 apiRouter.get("/users/:id", getUserByIdHandler);
-apiRouter.post("/users", addUsersHandler);
-apiRouter.put("/users/:id", updateUsersHandler);
-apiRouter.delete("/users/:id", deleteUsersByIdHandler);
+apiRouter.post("/users", addUserHandler);
+apiRouter.put("/users/:id", updateUserHandler);
+apiRouter.delete("/users/:id", deleteUserByIdHandler);
 
 apiRouter.get("/products", getAllProductsHandler);
 apiRouter.get("/products/:id", getProductByIdHandler);
