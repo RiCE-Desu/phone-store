@@ -12,8 +12,8 @@ import {
   deleteProductByIdHandler,
   getAllProductsHandler,
   getProductByIdHandler,
-  updateProductsHandler
-} from "../handler/productHandler.js";
+  updateProductByIdHandler,
+} from "../controllers/productController.js";
 
 const apiRouter = express.Router();
 
@@ -26,7 +26,7 @@ apiRouter.delete("/users/:id", deleteUserByIdHandler);
 apiRouter.get("/products", getAllProductsHandler);
 apiRouter.get("/products/:id", getProductByIdHandler);
 apiRouter.post("/products", addProductHandler);
-apiRouter.put("/products/:id", updateProductsHandler);
+apiRouter.put("/products/:id", updateProductByIdHandler);
 apiRouter.delete("/products/:id", deleteProductByIdHandler);
 
 export default apiRouter; 

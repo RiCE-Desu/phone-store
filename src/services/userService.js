@@ -1,6 +1,9 @@
 // src/services/userService.js
+import { request } from "express";
 import { pool } from "../config/db.js";
 import { ResponseError } from "../errors/responseError.js";
+import { createUserSchema, updateUserSchema } from "../validations/userValidation.js";
+import validate from "../validations/validate.js";
 
 export const getAllUser = async () => {
     const [users] = await pool.query(
@@ -25,28 +28,42 @@ export const getUserById = async (id) => {
     return users[0];
 };
 
-export const addUser = async (userData) => {
-    const { fullname, username, email, password, role } = userData;
-    const [result] = await pool.query(
+export const addUser = async (request) => {
+    const validated = validate(createUserSchema, request);
+
+    const { fullname, username, email, password, role } = validated;
+
+    const [res] = await pool.query(
         "INSERT INTO users (fullname, username, email, password, role) VALUES (?, ?, ?, ?, ?)",
         [fullname, username, email, password, role]
     );
 
-    return { id: result.insertId, ...userData };
+    const result = createUserSchema.safeParse(request);
+
+    console.log("Validate Data", JSON.stringify(result));
 };
 
-export const updateUser = async (id, userData) => {
-    const { fullname, username, email, password, role } = userData;
-    const [result] = await pool.query(
-        "UPDATE users SET fullname=?, username=?, email=?, password=?, role=? WHERE id=?",
-        [fullname, username, email, password, role, id]
+export const updateUser = async (id, request) => {
+    const validated = validate(updateUserSchema, request);
+ 
+    // Ambil data yang sudah valid
+    const {
+        fullname,
+        username,
+        email,
+        password,
+        role,
+        address,
+        phone_number,
+        age,
+    } = validated;
+
+    // Masukan ke database
+    await pool.query(
+        "UPDATE users SET fullname=?, username=?, email=?, password=?, role=?, address=?, phone_number=?, age=? WHERE id=?",
+
+        [fullname, username, email, password, role, address, phone_number, age, id],
     );
-
-    if (result.affectedRows === 0) {
-        throw new ResponseError(404, "User not found");
-    }
-
-    return { id, ...userData };
 };
 
 export const deleteUser = async (id) => {
@@ -54,4 +71,4 @@ export const deleteUser = async (id) => {
     if (result.affectedRows === 0) {
         throw new ResponseError(404, "User not found");
     }
-    };
+};
