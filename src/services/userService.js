@@ -4,6 +4,7 @@ import { pool } from "../config/db.js";
 import { ResponseError } from "../errors/responseError.js";
 import { createUserSchema, updateUserSchema } from "../validations/userValidation.js";
 import validate from "../validations/validate.js";
+import bcrypt from "bcrypt";
 
 export const getAllUser = async () => {
     const [users] = await pool.query(
@@ -29,41 +30,73 @@ export const getUserById = async (id) => {
 };
 
 export const addUser = async (request) => {
-    const validated = validate(createUserSchema, request);
+  const validated = validate(createUserSchema, request);
 
-    const { fullname, username, email, password, role } = validated;
+  const { fullname, username, email, password, role } = validated;
 
-    const [res] = await pool.query(
-        "INSERT INTO users (fullname, username, email, password, role) VALUES (?, ?, ?, ?, ?)",
-        [fullname, username, email, password, role]
-    );
+  // hash password sebelum disimpan
+  const hashedPassword = await bcrypt.hash(password, 10);
 
-    const result = createUserSchema.safeParse(request);
+  const [users] = await pool.query(
+    "INSERT INTO users (fullname, username, email, password, role) VALUES (?,?,?,?,?)",
+    [fullname, username, email, hashedPassword, role],
+  );
 
-    console.log("Validate Data", JSON.stringify(result));
+  // Objek data user tanpa password
+  const newUser = {
+    id: users.insertId,
+    fullname,
+    username,
+    email,
+    role,
+  };
+
+  return newUser;
 };
 
 export const updateUser = async (id, request) => {
-    const validated = validate(updateUserSchema, request);
- 
-    // Ambil data yang sudah valid
-    const {
-        fullname,
-        username,
-        email,
-        password,
-        role,
-        address,
-        phone_number,
-        age,
-    } = validated;
+  const validated = validate(updateUserSchema, request);
+  const {
+    fullname,
+    username,
+    email,
+    password,
+    role,
+    address,
+    phone_number,
+    age,
+  } = validated;
 
-    // Masukan ke database
-    await pool.query(
-        "UPDATE users SET fullname=?, username=?, email=?, password=?, role=?, address=?, phone_number=?, age=? WHERE id=?",
+  // 🔐 hash password sebelum disimpan
+  const hashedPassword = await bcrypt.hash(password, 10);
 
-        [fullname, username, email, password, role, address, phone_number, age, id],
-    );
+  // 📝 Gunakan const [result] untuk menampung hasil UPDATE
+  const [result] = await pool.query(
+    "UPDATE users SET fullname=?, username=?, email=?, password=?, role=?, address=?, phone_number=?, age=? WHERE id=?",
+    [
+      fullname,
+      username,
+      email,
+      hashedPassword,
+      role,
+      address,
+      phone_number,
+      age,
+      id,
+    ],
+  );
+
+  // ❗ Cek affectedRows dari result
+  if (result.affectedRows === 0) {
+    throw new ResponseError(404, "Product not found");
+  }
+
+  const [userUpdate] = await pool.query(
+    "SELECT fullname, username, email, role, address, phone_number, age FROM users WHERE id=?",
+    [id],
+  );
+
+  return userUpdate[0];
 };
 
 export const deleteUser = async (id) => {

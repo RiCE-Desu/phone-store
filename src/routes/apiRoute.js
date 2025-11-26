@@ -16,7 +16,6 @@ import {
 } from "../controllers/productController.js";
 
 const apiRouter = express.Router();
-
 apiRouter.get("/users", getAllUsersHandler);
 apiRouter.get("/users/:id", getUserByIdHandler);
 apiRouter.post("/users", addUserHandler);
